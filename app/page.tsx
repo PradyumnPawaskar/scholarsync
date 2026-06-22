@@ -11,12 +11,20 @@ const SUBJECTS = [
   'PE',
 ];
 
+type Report = {
+  summary: string;
+  weaknesses: string[];
+  recommendations: string[];
+};
+
 export default function Home() {
   const [formData, setFormData] = useState({
     studentName: '',
     grades: SUBJECTS.reduce((acc, subject) => ({ ...acc, [subject]: '' }), {} as Record<string, string>),
     attendance: '',
   });
+  const [report, setReport] = useState<Report | null>(null);
+  const [loading, setLoading] = useState(false);
 
   const handleGradeChange = (subject: string, value: string) => {
     setFormData((prev) => ({
@@ -25,10 +33,88 @@ export default function Home() {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log(formData);
+    setLoading(true);
+
+    // PLACEHOLDER: fake report generation, replace with real API call later
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    setReport({
+      summary: `${formData.studentName || 'This student'} shows strong performance in some subjects but inconsistent results across others. Overall attendance is ${formData.attendance || 'N/A'}%, which ${Number(formData.attendance) < 80 ? 'may be impacting' : 'supports'} academic outcomes.`,
+      weaknesses: [
+        'Performance dip detected in core STEM subjects.',
+        'Inconsistent scores suggest gaps in foundational concepts.',
+      ],
+      recommendations: [
+        'Schedule a focused review session for the weakest subject.',
+        'Monitor attendance trends over the next month.',
+        'Consider peer tutoring for consistent improvement.',
+      ],
+    });
+    setLoading(false);
   };
+
+  const handleReset = () => {
+    setReport(null);
+    setFormData({
+      studentName: '',
+      grades: SUBJECTS.reduce((acc, subject) => ({ ...acc, [subject]: '' }), {} as Record<string, string>),
+      attendance: '',
+    });
+  };
+
+  if (report) {
+    return (
+      <main className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
+        <div className="w-full max-w-2xl bg-white rounded-2xl shadow-md p-8">
+          <div className="flex items-center justify-between mb-6">
+            <h1 className="text-2xl font-semibold text-gray-900">
+              Insight Report
+            </h1>
+            <button
+              onClick={handleReset}
+              className="text-sm text-blue-600 hover:underline"
+            >
+              New Report
+            </button>
+          </div>
+
+          <h2 className="text-lg font-medium text-gray-900 mb-1">
+            {formData.studentName || 'Student'}
+          </h2>
+
+          <div className="mb-6">
+            <h3 className="text-sm font-semibold text-gray-500 uppercase mb-2">
+              Summary
+            </h3>
+            <p className="text-gray-800">{report.summary}</p>
+          </div>
+
+          <div className="mb-6">
+            <h3 className="text-sm font-semibold text-gray-500 uppercase mb-2">
+              Flagged Weaknesses
+            </h3>
+            <ul className="list-disc list-inside text-gray-800 space-y-1">
+              {report.weaknesses.map((w, i) => (
+                <li key={i}>{w}</li>
+              ))}
+            </ul>
+          </div>
+
+          <div>
+            <h3 className="text-sm font-semibold text-gray-500 uppercase mb-2">
+              Recommendations
+            </h3>
+            <ul className="list-disc list-inside text-gray-800 space-y-1">
+              {report.recommendations.map((r, i) => (
+                <li key={i}>{r}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
@@ -102,9 +188,10 @@ export default function Home() {
 
           <button
             type="submit"
-            className="w-full bg-blue-600 text-white font-medium py-2.5 rounded-lg hover:bg-blue-700 transition-colors"
+            disabled={loading}
+            className="w-full bg-blue-600 text-white font-medium py-2.5 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
           >
-            Generate Insight Report
+            {loading ? 'Generating...' : 'Generate Insight Report'}
           </button>
         </form>
       </div>
