@@ -37,21 +37,25 @@ export default function Home() {
     e.preventDefault();
     setLoading(true);
 
-    // PLACEHOLDER: fake report generation, replace with real API call later
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setReport({
-      summary: `${formData.studentName || 'This student'} shows strong performance in some subjects but inconsistent results across others. Overall attendance is ${formData.attendance || 'N/A'}%, which ${Number(formData.attendance) < 80 ? 'may be impacting' : 'supports'} academic outcomes.`,
-      weaknesses: [
-        'Performance dip detected in core STEM subjects.',
-        'Inconsistent scores suggest gaps in foundational concepts.',
-      ],
-      recommendations: [
-        'Schedule a focused review session for the weakest subject.',
-        'Monitor attendance trends over the next month.',
-        'Consider peer tutoring for consistent improvement.',
-      ],
-    });
-    setLoading(false);
+    try {
+      const response = await fetch('/api/generate-report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to generate report');
+      }
+
+      const data = await response.json();
+      setReport(data);
+    } catch (error) {
+      console.error(error);
+      alert('Something went wrong generating the report. Check the console.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleReset = () => {
